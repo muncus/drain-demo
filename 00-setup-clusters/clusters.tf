@@ -1,28 +1,8 @@
+provider "google" {
+  project = var.project
+}
+
 data "google_client_config" "default" {}
-
-provider "kubernetes" {
-  host                   = "https://${module.cluster-a.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.cluster-a.ca_certificate)
-  alias                  = "cluster-A"
-  ignore_annotations = [
-    "cloud\\.google\\.com\\/neg",
-    "cloud\\.google\\.com\\/neg-status",
-    "^autopilot\\.gke\\.io\\/.*",
-  ]
-}
-
-provider "kubernetes" {
-  host                   = "https://${module.cluster-b.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.cluster-b.ca_certificate)
-  alias                  = "cluster-B"
-  ignore_annotations = [
-    "cloud\\.google\\.com\\/neg",
-    "cloud\\.google\\.com\\/neg-status",
-    "^autopilot\\.gke\\.io\\/.*",
-  ]
-}
 
 module "cluster-a" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/beta-autopilot-public-cluster"

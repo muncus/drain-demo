@@ -1,23 +1,23 @@
 variable "project" {
   type = string
+  description = "project id in which to create resources"
 }
 
-// used in creation of both zones, with a suffix.
 variable "cluster_name" {
   type    = string
   default = "drain-demo-1"
+  description = "used as a name prefix on created resources"
 }
-// some resources are regional, like networks.
+
 variable "region" {
   type    = string
   default = "us-east1"
+  description = "regional resources are created here (e.g. networks)"
 }
 
 variable "zones" {
   type    = list(string)
   default = ["us-east1-c", "us-east1-b"]
+  description = "zones in which to create nodes. used for clusters A and B"
 }
 
-provider "google" {
-  project = var.project
-}

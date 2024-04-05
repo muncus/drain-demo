@@ -1,23 +1,13 @@
-# resource "google_compute_url_map" "global-lb" {
-#     name = "global frontend urlmap"
-#     description = "global frontend lb."
-#     default_service = google_compute_backend_service.whereami-global.id
-# }
-
-# resource "google_compute_backend_service" "whereami-global" {
-#     name = "whereami-global"
-#     port_name = "http"
-#     protocol = "HTTP"
-#     backend {
-#         group = 
-#     }
-# }
+// Locate the whereami service that runs in Cluster A
+// This provides information about the backend Network Endpoint Groups
 data "kubernetes_service" "lb-backend-A" {
   provider = kubernetes.cluster-A
   metadata {
     name = "whereami"
   }
 }
+// Locate the whereami service that runs in Cluster B
+// This provides information about the backend Network Endpoint Groups
 data "kubernetes_service" "lb-backend-B" {
   provider = kubernetes.cluster-B
   metadata {
@@ -50,23 +40,25 @@ data "google_compute_network_endpoint_group" "neg-B" {
 // Health check, using the serving port on the kubernetes service object.
 resource "google_compute_health_check" "default" {
   name = "health-check"
+  check_interval_sec = 2
+  healthy_threshold = 1
   http_health_check {
     port = 8080
   }
 }
 
 resource "google_compute_backend_service" "default" {
-  name                  = "terraform-bs"
+  name                  = "${var.cluster_name}-backend-service"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   protocol              = "HTTP"
   health_checks         = [google_compute_health_check.default.id]
   // for demonstration, use a random backend.
   locality_lb_policy = "RANDOM"
-  //NEGS go here.
+  // NEGS go here.
+  // NOTE: zero is not a valid max_rate. must remove whole block to drain.
   backend {
     group          = data.google_compute_network_endpoint_group.neg-A.self_link
     balancing_mode = "RATE"
-    // zero is not a valid max_rate. must remove whole block.
     max_rate_per_endpoint = 100
   }
   backend {
@@ -77,22 +69,22 @@ resource "google_compute_backend_service" "default" {
 }
 
 resource "google_compute_url_map" "default" {
-  name            = "terraform-lb"
+  name            = "${var.cluster_name}-urlmap"
   default_service = google_compute_backend_service.default.id
 }
 
 resource "google_compute_target_http_proxy" "default" {
-  name    = "tfproxy"
+  name    = "${var.cluster_name}-proxy"
   url_map = google_compute_url_map.default.id
 }
 
 resource "google_compute_global_forwarding_rule" "default" {
-  name                  = "lb-tf"
+  name                  = "${var.cluster_name}-fr"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   port_range            = "80"
   target                = google_compute_target_http_proxy.default.id
 }
 
-output "frontend" {
-  value = google_compute_global_forwarding_rule.default.ip_address
+output "loadbalancer_url" {
+  value = "http://${google_compute_global_forwarding_rule.default.ip_address}/"
 }

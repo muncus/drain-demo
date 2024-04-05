@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "A-whereami" {
   provider   = kubernetes.cluster-A
-  depends_on = [module.cluster-a]
+  # depends_on = [module.cluster-a]
   metadata {
     name = "whereami"
   }
@@ -34,7 +34,7 @@ resource "kubernetes_deployment" "A-whereami" {
 }
 resource "kubernetes_service" "A-whereami" {
   provider   = kubernetes.cluster-A
-  depends_on = [module.cluster-a]
+  # depends_on = [module.cluster-a]
   metadata {
     name = "whereami"
   }
@@ -55,7 +55,7 @@ resource "kubernetes_service" "A-whereami" {
 
 resource "kubernetes_ingress_v1" "A-whereami" {
   provider   = kubernetes.cluster-A
-  depends_on = [module.cluster-a]
+  # depends_on = [module.cluster-a]
   metadata {
     name = "whereami"
   }
@@ -73,7 +73,7 @@ resource "kubernetes_ingress_v1" "A-whereami" {
 
 resource "kubernetes_deployment" "B-whereami" {
   provider   = kubernetes.cluster-B
-  depends_on = [module.cluster-b]
+  # depends_on = [module.cluster-b]
   metadata {
     name = "whereami"
   }
@@ -107,7 +107,7 @@ resource "kubernetes_deployment" "B-whereami" {
 }
 resource "kubernetes_service" "B-whereami" {
   provider   = kubernetes.cluster-B
-  depends_on = [module.cluster-b]
+  # depends_on = [module.cluster-b]
   metadata {
     name = "whereami"
   }
@@ -128,7 +128,7 @@ resource "kubernetes_service" "B-whereami" {
 
 resource "kubernetes_ingress_v1" "B-whereami" {
   provider   = kubernetes.cluster-B
-  depends_on = [module.cluster-b]
+  # depends_on = [module.cluster-b]
   metadata {
     name = "whereami"
   }
